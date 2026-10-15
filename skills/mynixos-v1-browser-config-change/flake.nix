@@ -1,5 +1,5 @@
 {
-  description = "mynixos-v1-config-change: Coding-agent skill — change a NixOS, nix-darwin or Home Manager configuration on MyNixOS (mynixos.com) through the browser, then release, build, verify and switch";
+  description = "mynixos-v1-browser-config-change: Coding-agent skill — change a NixOS, nix-darwin or Home Manager configuration on MyNixOS (mynixos.com) through the browser, then release, build, verify and switch";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -12,7 +12,7 @@
     agent-skill-flake.lib.mkSkillFlake {
       inherit nixpkgs;
       source = import ../../source.nix;
-      skillName = "mynixos-v1-config-change";
+      skillName = "mynixos-v1-browser-config-change";
       src = ./.;
     };
 }
