@@ -1,11 +1,12 @@
 ---
-name: mynixos-config-change
+name: mynixos-v1-config-change
 description: Change a NixOS, nix-darwin or Home Manager configuration that lives on MyNixOS (mynixos.com, the v1 website) by editing it in the browser with Claude in Chrome, then release it, build it locally, verify the build and switch to it. Use it whenever a configuration managed on MyNixOS needs a change (packages, Homebrew, services, shell, dotfiles, any option), and whenever MyNixOS settings, outputs, inputs, releases or a switch come up.
 ---
 
-# Change a configuration on MyNixOS
+# Change a configuration on MyNixOS v1
 
-MyNixOS keeps the configuration as settings on its website, not as files in a
+This skill covers the v1 website at mynixos.com. MyNixOS keeps the
+configuration as settings on its website, not as files in a
 local repository. A change goes through five steps, in order:
 
 1. Test the new value locally.

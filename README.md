@@ -11,9 +11,9 @@ built by [`agent-skill-flake`](https://github.com/nhooey/agent-skill-flake).
 
 ## Skills
 
-| Skill                                                            | What it does                                                                                                                                                                        |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`mynixos-config-change`](skills/mynixos-config-change/SKILL.md) | Changes a NixOS, nix-darwin or Home Manager configuration kept on MyNixOS: test the value locally, edit it on mynixos.com with Claude in Chrome, release, build, verify and switch. |
+| Skill                                                                  | What it does                                                                                                                                                                        |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`mynixos-v1-config-change`](skills/mynixos-v1-config-change/SKILL.md) | Changes a NixOS, nix-darwin or Home Manager configuration kept on MyNixOS: test the value locally, edit it on mynixos.com with Claude in Chrome, release, build, verify and switch. |
 
 ## Install
 
@@ -36,7 +36,7 @@ nix run github:nhooey/mynixos-skills#uninstall
 Package outputs:
 
 - `agent-skills-nhooey-mynixos-all`: the aggregate of every skill (also `default`)
-- `agent-skill-nhooey-mynixos-config-change`
+- `agent-skill-nhooey-mynixos-v1-config-change`
 
 ## Development
 
