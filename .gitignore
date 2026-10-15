@@ -1,0 +1,15 @@
+# Nix build outputs
+/result
+/result-*
+/skills/*/result
+/skills/*/result-*
+
+# skill-creator scratch workspaces (benchmarks, logs, eval outputs)
+/skills/*-workspace/
+
+# Git worktrees per the using-git-worktrees skill
+/.worktrees/
+
+# Project-scope skill installs from `nix develop`'s startup hooks.
+/.claude/skills/
+
