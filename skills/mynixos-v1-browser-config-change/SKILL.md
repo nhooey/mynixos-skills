@@ -6,8 +6,7 @@ description: Change a NixOS, nix-darwin or Home Manager configuration that lives
 # Change a configuration on MyNixOS v1 through the browser
 
 This skill drives the v1 website at mynixos.com in a browser, not an API.
-MyNixOS keeps the
-configuration as settings on its website, not as files in a
+MyNixOS keeps the configuration as settings on its website, not as files in a
 local repository. A change goes through five steps, in order:
 
 1. Test the new value locally.
