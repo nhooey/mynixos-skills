@@ -47,14 +47,16 @@ reference, or have a small local flake take it as an input (and pass
 (nixpkgs, home-manager, and so on) is pinned by MyNixOS's own `flake.lock`,
 so an input that's out of date gets updated on the Inputs page, not locally.
 
-Before starting, ask the user for anything you can't find out: the flake's
-path, the host name, and how they switch (the command, and whether it needs
-their `sudo` password).
+Before starting, take the flake's path, the host name and how the user
+switches (the command, and whether it needs their `sudo` password) from your
+preferences, and ask the user for any of them that aren't there and that you
+can't find out.
 
 ## 1. Test the change before touching MyNixOS
 
 Write the new value into a local file first, and evaluate or build it at the
-same pinned revisions the release uses:
+same pinned revisions the release uses. If your preferences name a directory
+of local copies of hand-written settings, write or update the copy there.
 
 ```bash
 src=$(nix flake prefetch --json https://api.mynixos.com/<owner>/<flake>/archive/main.tar.gz | jq -r .storePath)
@@ -87,18 +89,20 @@ Build it with
 `nix build --impure --no-link --print-out-paths --expr '(import ./test.nix).activationPackage'`
 (or `.config.home-files` for the generated files) and inspect the result. Run
 the program against the generated config where it can run without a full
-session.
+session, for example `STARSHIP_CONFIG=<generated starship.toml> starship prompt`.
 
 Also read the module's source at the pinned revision for defaults that bite.
 For example, Home Manager turns each `programs.*.enable<Shell>Integration` on
-for every shell by default.
+for every shell by default, so a program enabled for one shell needs an
+explicit `false` for each of the others.
 
 ## 2. Edit on MyNixOS
 
-Use Claude in Chrome. Find elements with `find` rather than by screen
-coordinates where you can: the window's size changes, and coordinates go
-stale. A `find` reference belongs to one page load, so look it up again after
-every navigation.
+Use Claude in Chrome, in the browser `coding-agent-browser-selection` picks.
+Find elements with `find` rather than by screen coordinates where you can:
+the window's size changes, and coordinates go stale. A `find` reference
+belongs to one page load, so look it up again after every navigation; an old
+reference can land on a different element.
 
 ### Kinds of settings
 
@@ -117,7 +121,11 @@ every navigation.
 - **Free-form settings** come from **Add setting** under an output on the
   Outputs page. Use them only for options that MyNixOS's catalogue lacks
   (the option page says "Resource not found"). They always show as a Nix
-  expression box.
+  expression box, never as a toggle.
+- **Free-form modules** (`nixosModules.*`, `darwinModules.*`,
+  `homeModules.*`): edit the module's body in its text box on the Outputs
+  page and save it with that form's own **Apply**. The module's **Edit**
+  control only opens a rename dialog; cancel it.
 
 ### Saving
 
@@ -127,9 +135,13 @@ every navigation.
 - **An existing setting:** edit it and click its own **Apply**. It keeps its
   target. **Apply** stays greyed out until the form registers a change; a
   click on it while greyed out saves nothing, so check it's enabled first.
-- **A toggle:** a new one starts at the option's default. The Apply dropdown
-  only opens once the form changes, so to save the value it already shows,
-  switch it on and back off.
+- **Converting a free-form setting to a typed one:** on the option page,
+  **Remove** the "Nix expression" setting, set the typed editor, then apply
+  it through the **Apply ▾** dropdown.
+- **A toggle:** a new one starts at the option's default, and shows
+  "Disabled" when that default is an expression. The Apply dropdown only
+  opens once the form changes, so to save the value it already shows (such
+  as an explicit `false`), switch it on and back off.
 - **Free-form values must be one line.** The Add setting dialog keeps only
   the first line. A leading comment line then becomes the whole value and
   breaks the generated Nix.
@@ -140,7 +152,8 @@ every navigation.
 
 ### Entering text
 
-- `form_input` is fine for short ASCII values.
+- `form_input` is fine for short ASCII values. It mangles `\u` escapes, so
+  don't use it for text that holds them.
 - For longer text, click into the box, select all with `cmd+a` (`ctrl+a`
   elsewhere), and type or paste the new value.
 - To replace part of a long box without retyping it all:
@@ -149,15 +162,16 @@ every navigation.
   2. With JavaScript, check that `document.activeElement` is the box, then
      select the old text with `setSelectionRange`. This only moves the
      selection; it doesn't change the page.
-  3. Type the replacement.
+  3. Type the replacement with `computer`.
 - **Typing or pasting right after a page load is often lost.** Read the value
   back every time and compare its length with what you meant to enter;
   repeat until it matches.
 - Text the agent can't type (for example Nerd Font private-use characters):
-  write it into a file with a script, inserting each character by code point
-  (`chr(0xF1A0)` in Python), copy it with `pbcopy < file`, and paste it.
-  Copy it again right before pasting, since the user may have copied
-  something in between.
+  1. Write it into a file with a script, inserting each character by code
+     point (`chr(0xF1A0)` in Python).
+  2. Copy it with `pbcopy < file`, right before pasting, since the user may
+     have copied something in between.
+  3. Click into the box, then `cmd+a` and `cmd+v`.
 - Typing while nothing is focused sends keys to the page, and a space
   scrolls it. Check the focus before typing.
 
@@ -174,10 +188,20 @@ every navigation.
 
 ### Inputs and outputs
 
+- **Updating an input:** on the Inputs page, tick the input's checkbox, then
+  click **Update (1)**. The checkboxes only pick inputs for **Update**. The
+  new lock shows only after a reload, in the input fields' values rather
+  than the page text.
+- **Deleting an input:** each input's own trash button deletes it. This has
+  failed with "Unknown error" before, the input coming back on reload. Retry
+  once at most, then leave it and tell the user.
+- **Adding a flake or package:** if your setup routes new flakes and
+  packages through an aggregator flake that's already an input, add them
+  there and update that input, rather than adding an input here; your
+  preferences say which flake and how. Add an input on this page only when
+  the user asks for one, or when the flake has to be locked on its own.
 - **Deleting an output:** the output's **Delete** control opens a
   confirmation dialog inside the page; confirm it there.
-- **Deleting an input** has failed with "Unknown error" before, the input
-  coming back on reload. Retry once at most, then leave it and tell the user.
 - MyNixOS sometimes adds inputs of its own (such as a second `home-manager`).
   Unused inputs don't change the build.
 
@@ -222,39 +246,74 @@ nix store diff-closures /run/current-system ./result
 - `nix store diff-closures` lists package changes; expect none beyond the
   change itself.
 - Check the generated files in `result` against what step 1 tested, for
-  example the Home Manager files
-  (`nix-store -qR result | grep 'home-manager-files$'`), the activation
-  script (`result/activate`), or a Brewfile.
+  example:
+  - the Home Manager files: `nix-store -qR result | grep 'home-manager-files$'`
+  - the activation script: `result/activate`
+  - a Brewfile: `nix-store -qR result | grep -i brewfile`
+- For a Homebrew change, `brew bundle check --verbose --file=<Brewfile>`
+  shows what the switch would install, without changing anything.
 
 ## 5. Switch
 
 Switch only when the user asked for it or approved it for this change.
 Switching usually needs the user's `sudo` password, so start it where they can
-type, such as a new terminal or tmux window, and wait for it to finish:
+type and see the prompt. In tmux, open a window right after the agent's own,
+without `-d` so it takes the focus, and wait a bounded time so the wait fits
+in one command:
 
 ```bash
 S=<scratch directory>; rm -f "$S/switch.exit"
-tmux new-window -n switch \
+tmux new-window -a -t "$(tmux display -p -t "$TMUX_PANE" '#{window_id}')" -n switch \
   "bash -c 'script -q $S/switch.log <switch command>; echo \$? > $S/switch.exit; echo Done, press Enter.; read'"
-until [ -f "$S/switch.exit" ]; do sleep 5; done
+for i in $(seq 1 115); do [ -f "$S/switch.exit" ] && break; sleep 5; done
 ```
+
+If the exit file isn't there yet, run the wait loop again.
 
 Then:
 
 - Read the exit code and the end of the log, with ANSI codes stripped.
 - Confirm that `/run/current-system` now points at the built `result`. A
-  failed activation leaves it on the old system.
-- Close the window you opened.
-- Check the change on the running system. Programs that read their
-  configuration only at start need a reload. For example, every running tmux
-  server has to run `source-file` on its config.
+  failed activation stops partway through and leaves it on the old system.
+- Close the window you opened: `tmux kill-window -t switch`.
+- Check the change on the running system: a new shell, a service's state,
+  Homebrew taps removed, and so on. Programs that read their configuration
+  only at start need a reload. For example, every running tmux server has to
+  run `source-file` on its config.
+
+A known cause of a failed nix-darwin switch: a Homebrew brew with
+`start_service` fails when its service is already loaded. nix-darwin runs
+`brew bundle` through `sudo`, so Homebrew targets launchd's `user/` domain
+instead of `gui/`.
 
 ## Rules
 
 - A MyNixOS flake can be public. Never put secrets in a setting; keep them in
   a local file that the configuration reads at run time.
+- Never delete or overwrite the local files your preferences list as
+  protected.
 - Pushing to a repository, posting anything public, and switching all need
   the user's go-ahead.
 - Changes made outside Nix (`defaults write`, fish universal variables,
-  service state) aren't tracked by MyNixOS. Say so when you make one, and
-  back up what it replaces.
+  Homebrew services and other service state) aren't tracked by MyNixOS. Say
+  so when you make one, and back up what it replaces.
+- If your preferences name a notes file for configuration changes, add a
+  dated line to it for each change.
+
+## Your preferences
+
+!`cat "${CLAUDE_SKILL_DIR}/../mynixos-v1-browser-config-change.preferences.md" "${CLAUDE_PROJECT_DIR}/.agents/skills/mynixos-v1-browser-config-change.preferences.md" 2>/dev/null || true`
+
+If your agent doesn't run the line above, read these files yourself if they
+exist: `mynixos-v1-browser-config-change.preferences.md` next to this skill's folder, then
+`.agents/skills/mynixos-v1-browser-config-change.preferences.md` in the project. A project's
+file overrides the user's, and the user's overrides this skill's defaults.
+
+## Related skills
+
+When one of these applies and it's in your skill listing, load it
+without asking. If it isn't in your listing, tell the user which skill is
+missing and ask whether to install it from the same collection this skill
+came from; don't apply it from memory.
+
+- `coding-agent-browser-selection`: makes sure the Claude in Chrome tools drive the browser and window the user prefers, before the first browser call.
